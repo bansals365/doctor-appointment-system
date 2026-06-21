@@ -6,4 +6,5 @@ export const appointmentService = {
   cancel: (id) => api.delete(`/appointments/${id}`),
   createPaymentOrder: (appointmentId) => api.post('/payments/create-order', { appointmentId }),
   verifyPayment: (data) => api.post('/payments/verify', data),
+  payAtHospital: (appointmentId) => api.post('/payments/pay-at-hospital', { appointmentId }),
 }

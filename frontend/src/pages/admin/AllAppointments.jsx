@@ -11,6 +11,13 @@ const STATUS_COLORS = {
   NO_SHOW: 'bg-red-100 text-red-700',
 }
 
+function PaymentBadge({ method, status }) {
+  if (!method) return <span className="text-gray-400">—</span>
+  if (method === 'CASH') return <span className="badge bg-amber-100 text-amber-700">Cash · at hospital</span>
+  if (status === 'SUCCESS') return <span className="badge bg-green-100 text-green-700">Paid online</span>
+  return <span className="badge bg-gray-100 text-gray-500">Online · pending</span>
+}
+
 export default function AllAppointments() {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -57,7 +64,7 @@ export default function AllAppointments() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
-                {['#', 'Patient', 'Doctor', 'Specialization', 'Date', 'Time', 'Status'].map(h => (
+                {['#', 'Patient', 'Doctor', 'Specialization', 'Date', 'Time', 'Status', 'Payment'].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{h}</th>
                 ))}
               </tr>
@@ -77,6 +84,9 @@ export default function AllAppointments() {
                   </td>
                   <td className="px-4 py-3">
                     <span className={`badge ${STATUS_COLORS[a.status]}`}>{a.status}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <PaymentBadge method={a.paymentMethod} status={a.paymentStatus} />
                   </td>
                 </tr>
               ))}

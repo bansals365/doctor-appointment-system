@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { appointmentService } from '../../services/appointmentService'
+import { payForAppointment } from '../../services/paymentService'
+import { useAuth } from '../../context/AuthContext'
 import Spinner from '../../components/common/Spinner'
 import toast from 'react-hot-toast'
-import { Calendar, Clock, User, XCircle } from 'lucide-react'
+import { Calendar, Clock, User, XCircle, CreditCard, Building2 } from 'lucide-react'
 
 const STATUS_COLORS = {
   PENDING: 'bg-yellow-100 text-yellow-700',
@@ -13,8 +15,10 @@ const STATUS_COLORS = {
 }
 
 export default function MyAppointments() {
+  const { user } = useAuth()
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
+  const [payingId, setPayingId] = useState(null)
 
   const fetchAppointments = async () => {
     try {
@@ -35,6 +39,33 @@ export default function MyAppointments() {
       fetchAppointments()
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to cancel')
+    }
+  }
+
+  const handlePay = async (appt) => {
+    try {
+      setPayingId(appt.id)
+      await payForAppointment(appt, user)
+      toast.success('Payment successful! Appointment confirmed.')
+      await fetchAppointments()
+    } catch (err) {
+      toast.error(err.message || 'Payment failed')
+    } finally {
+      setPayingId(null)
+    }
+  }
+
+  const handlePayAtHospital = async (appt) => {
+    if (!confirm('Confirm this appointment and pay at the hospital during your visit?')) return
+    try {
+      setPayingId(appt.id)
+      await appointmentService.payAtHospital(appt.id)
+      toast.success('Booking confirmed! Please pay at the hospital during your visit.')
+      await fetchAppointments()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to confirm')
+    } finally {
+      setPayingId(null)
     }
   }
 
@@ -77,6 +108,26 @@ export default function MyAppointments() {
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <span className={`badge ${STATUS_COLORS[appt.status]}`}>{appt.status}</span>
+                  {appt.status === 'PENDING' && (
+                    <button
+                      onClick={() => handlePay(appt)}
+                      disabled={payingId === appt.id}
+                      className="btn-primary text-xs py-1.5 px-3 flex items-center gap-1"
+                    >
+                      <CreditCard className="w-3.5 h-3.5" />
+                      {payingId === appt.id ? 'Processing...' : 'Pay Now'}
+                    </button>
+                  )}
+                  {appt.status === 'PENDING' && (
+                    <button
+                      onClick={() => handlePayAtHospital(appt)}
+                      disabled={payingId === appt.id}
+                      className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1"
+                    >
+                      <Building2 className="w-3.5 h-3.5" />
+                      Pay at Hospital
+                    </button>
+                  )}
                   {(appt.status === 'PENDING' || appt.status === 'CONFIRMED') && (
                     <button
                       onClick={() => handleCancel(appt.id)}

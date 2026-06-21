@@ -1,6 +1,7 @@
 package com.docapp.dto.response;
 
 import com.docapp.model.Appointment;
+import com.docapp.model.Payment;
 import lombok.Builder;
 import lombok.Data;
 
@@ -21,10 +22,18 @@ public class AppointmentResponse {
     private LocalTime startTime;
     private LocalTime endTime;
     private String status;
+    private String paymentMethod;
+    private String paymentStatus;
     private String notes;
     private LocalDateTime createdAt;
 
     public static AppointmentResponse from(Appointment a) {
+        Payment p = a.getPayment();
+        // Payments created before the "method" column existed are online ones.
+        String payMethod = p == null ? null
+                : (p.getMethod() != null ? p.getMethod().name() : "ONLINE");
+        String payStatus = p == null || p.getStatus() == null ? null : p.getStatus().name();
+
         return AppointmentResponse.builder()
                 .id(a.getId())
                 .patientId(a.getPatient().getId())
@@ -38,6 +47,8 @@ public class AppointmentResponse {
                 .startTime(a.getSlot().getStartTime())
                 .endTime(a.getSlot().getEndTime())
                 .status(a.getStatus().name())
+                .paymentMethod(payMethod)
+                .paymentStatus(payStatus)
                 .notes(a.getNotes())
                 .createdAt(a.getCreatedAt())
                 .build();

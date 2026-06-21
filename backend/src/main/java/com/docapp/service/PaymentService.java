@@ -108,4 +108,24 @@ public class PaymentService {
             return false;
         }
     }
+
+    @Transactional
+    public void payAtHospital(Long appointmentId) {
+        Appointment appt = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
+
+        BigDecimal amount = BigDecimal.valueOf(appt.getDoctor().getFees());
+
+        // Reuse an existing payment row if the patient had started an online order,
+        // otherwise create a fresh cash payment.
+        Payment payment = paymentRepository.findByAppointmentId(appointmentId)
+                .orElseGet(() -> Payment.builder().appointment(appt).build());
+        payment.setAmount(amount);
+        payment.setMethod(Payment.Method.CASH);
+        payment.setStatus(Payment.Status.PENDING); // collected in person at the hospital
+        paymentRepository.save(payment);
+
+        appt.setStatus(Appointment.Status.CONFIRMED);
+        appointmentRepository.save(appt);
+    }
 }

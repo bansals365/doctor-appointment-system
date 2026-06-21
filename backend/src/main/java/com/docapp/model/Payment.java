@@ -31,11 +31,19 @@ public class Payment {
     @Column(nullable = false)
     private Status status = Status.PENDING;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private Method method = Method.ONLINE;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
     public enum Status {
         PENDING, SUCCESS, FAILED, REFUNDED
+    }
+
+    public enum Method {
+        ONLINE, CASH
     }
 }

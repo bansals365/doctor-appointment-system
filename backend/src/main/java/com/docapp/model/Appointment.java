@@ -28,6 +28,9 @@ public class Appointment {
     @JoinColumn(name = "slot_id", nullable = false)
     private TimeSlot slot;
 
+    @OneToOne(mappedBy = "appointment", fetch = FetchType.EAGER)
+    private Payment payment;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status = Status.PENDING;

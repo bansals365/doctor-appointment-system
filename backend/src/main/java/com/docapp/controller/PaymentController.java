@@ -33,4 +33,12 @@ public class PaymentController {
         }
         return ResponseEntity.badRequest().body(ApiResponse.error("Payment verification failed"));
     }
+
+    @PostMapping("/pay-at-hospital")
+    @PreAuthorize("hasRole('PATIENT')")
+    public ResponseEntity<ApiResponse<Boolean>> payAtHospital(@RequestBody Map<String, Long> body) {
+        paymentService.payAtHospital(body.get("appointmentId"));
+        return ResponseEntity.ok(ApiResponse.success(
+                "Appointment confirmed. Pay at the hospital during your visit.", true));
+    }
 }

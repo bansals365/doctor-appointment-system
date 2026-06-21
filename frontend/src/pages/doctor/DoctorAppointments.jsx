@@ -17,6 +17,13 @@ const NEXT_STATUSES = {
   CONFIRMED: ['COMPLETED', 'NO_SHOW', 'CANCELLED'],
 }
 
+function PaymentBadge({ method, status }) {
+  if (!method) return <span className="text-gray-400">—</span>
+  if (method === 'CASH') return <span className="badge bg-amber-100 text-amber-700">Cash · at hospital</span>
+  if (status === 'SUCCESS') return <span className="badge bg-green-100 text-green-700">Paid online</span>
+  return <span className="badge bg-gray-100 text-gray-500">Online · pending</span>
+}
+
 export default function DoctorAppointments() {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -56,7 +63,7 @@ export default function DoctorAppointments() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {['Patient', 'Date', 'Time', 'Status', 'Notes', 'Action'].map(h => (
+                  {['Patient', 'Date', 'Time', 'Status', 'Payment', 'Notes', 'Action'].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{h}</th>
                   ))}
                 </tr>
@@ -73,6 +80,9 @@ export default function DoctorAppointments() {
                     </td>
                     <td className="px-4 py-3">
                       <span className={`badge ${STATUS_COLORS[a.status]}`}>{a.status}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <PaymentBadge method={a.paymentMethod} status={a.paymentStatus} />
                     </td>
                     <td className="px-4 py-3 text-gray-500 max-w-xs truncate">{a.notes || '—'}</td>
                     <td className="px-4 py-3">
