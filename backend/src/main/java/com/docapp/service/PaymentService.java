@@ -28,17 +28,27 @@ public class PaymentService {
 
     private final AppointmentRepository appointmentRepository;
     private final PaymentRepository paymentRepository;
+    private final EmailService emailService;
     private final String razorpayKeyId;
     private final String razorpayKeySecret;
 
     public PaymentService(AppointmentRepository appointmentRepository,
                           PaymentRepository paymentRepository,
+                          EmailService emailService,
                           @Value("${razorpay.key.id}") String razorpayKeyId,
                           @Value("${razorpay.key.secret}") String razorpayKeySecret) {
         this.appointmentRepository = appointmentRepository;
         this.paymentRepository = paymentRepository;
+        this.emailService = emailService;
         this.razorpayKeyId = razorpayKeyId;
         this.razorpayKeySecret = razorpayKeySecret;
+    }
+
+    private void sendConfirmation(Appointment appt) {
+        emailService.sendBookingConfirmation(
+                appt.getPatient().getEmail(), appt.getPatient().getName(),
+                appt.getDoctor().getUser().getName(),
+                appt.getSlot().getSlotDate(), appt.getSlot().getStartTime());
     }
 
     @Transactional
@@ -101,6 +111,7 @@ public class PaymentService {
             Appointment appt = payment.getAppointment();
             appt.setStatus(Appointment.Status.CONFIRMED);
             appointmentRepository.save(appt);
+            sendConfirmation(appt);
 
             return true;
         } catch (Exception e) {
@@ -127,5 +138,6 @@ public class PaymentService {
 
         appt.setStatus(Appointment.Status.CONFIRMED);
         appointmentRepository.save(appt);
+        sendConfirmation(appt);
     }
 }

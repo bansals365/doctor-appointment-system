@@ -47,8 +47,8 @@ public class AppointmentService {
                 .build();
 
         Appointment saved = appointmentRepository.save(appointment);
-        emailService.sendBookingConfirmation(patient.getEmail(), patient.getName(),
-                slot.getDoctor().getUser().getName(), slot.getSlotDate(), slot.getStartTime());
+        // Confirmation email is sent only once the appointment is CONFIRMED (see PaymentService),
+        // not here while it is still PENDING payment.
 
         return AppointmentResponse.from(saved);
     }
